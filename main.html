@@ -16,7 +16,7 @@
             <button class="action-button esri-icon-measure-line" id="distanceButton" type="button" title="Measure distance between two points"></button
             ><button class="action-button esri-icon-measure-area" id="areaButton" type="button" title="Measure area"></button>
         </div>
-        <div id="bottombar">
+        <div id="bottomRightBar" class="blackBox">
             <table class="esrifont">
                 <tr>
                     <td class="padLR bold right">WGS84</td>
@@ -35,8 +35,44 @@
                     <td id="height">-- m <span class="dim">(-- m above terrain)</span></td>
                 </tr>
                 <tr>
-                    <td class="dim center" colspan="2" id="clipboardDisplay">
+                    <td class="center" colspan="2">
                         <button class="btn btn-disabled" id="clipboardBtn">Middle-click map to copy command</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="bottomLeftBar" class="blackBox">
+            <table class="esrifont">
+                <tr>
+                    <td class="right bold padLR">
+                        Buildings
+                    </td>
+                    <td class="center">
+                        <button class="btn btn-pad btn-enabled" id="buildingsBtn" data-status="on">On</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="right bold padLR">
+                        Infrastructure
+                    </td>
+                    <td class="center">
+                        <button class="btn btn-pad btn-enabled" id="infrastructuresBtn" data-status="on">On</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="right bold padLR">
+                        Terrain
+                    </td>
+                    <td class="center">
+                        <button class="btn btn-pad btn-enabled" id="terrainBtn" data-status="on">On</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="right bold padLR">
+                        Map
+                    </td>
+                    <td class="center">
+                        <button class="btn btn-pad btn-enabled" id="mapBtn" data-status="satellite">Satellite</button>
                     </td>
                 </tr>
             </table>

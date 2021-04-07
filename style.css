@@ -35,7 +35,7 @@ html, body, #scene-area {
 }
 
 
-#bottombar {
+.blackBox {
     background-color: #000000aa;
     color: #d1d1d1;
     font-size: 14px;
@@ -44,7 +44,7 @@ html, body, #scene-area {
 }
 
 .padLR {
-    padding: 0px 6px;
+    padding: 0px 8px;
 }
 
 .bold {
@@ -80,9 +80,21 @@ html, body, #scene-area {
     background-color: #0079c1;
     color: white;
 }
+.btn[data-status="off"]:hover {
+    background-color: #003f64;
+    color: #999;
+}
 .btn-active {
     background-color: #009220;
     color: white;
+}
+.btn[data-status="street"]:hover {
+    background-color: #00a724;
+}
+.btn-pad {
+    padding: 5px 0px;
+    /* padding: 5px 25px; */
+    width: 80px;
 }
 #clipboardBtn {
     width: 100%;
