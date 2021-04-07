@@ -133,8 +133,9 @@ require([
             cb.innerHTML = "Copied to clipboard";
             cb.className = "btn btn-active bold";
             setTimeout(function() {
-                cb.innerHTML = "Middle-click map to copy";
-                cb.className = "btn btn-disabled";
+                cb.innerHTML = "Copy command";
+                cb.className = "btn btn-enabled";
+                cb.disabled = false;
             }, 1000)
         }
     }
