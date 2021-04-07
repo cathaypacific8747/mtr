@@ -43,17 +43,30 @@
             }
             
             #bottombar {
-                background: #000000aa;
+                background-color: #000000aa;
                 color: #d1d1d1;
                 font-family: "Avenir Next","Helvetica Neue",Helvetica,Arial,sans-serif;
                 font-size: 14px;
                 padding: 6px;
             }
+            .padLR {
+                padding: 0px 6px;
+            }
 
             .bold {
-                padding: 0px 6px;
+                color: white;
                 font-weight: bold;
+            }
+            .dim {
+                color: grey;
+                font-style: italic;
+            }
+
+            .right {
                 text-align: right;
+            }
+            .center {
+                text-align: center;
             }
         </style>
     </head>
@@ -66,16 +79,19 @@
         <div id="bottombar">
             <table>
                 <tr>
-                    <td class="bold">WGS84</td>
+                    <td class="padLR bold right">WGS84</td>
                     <td id="wgs84coords">---, ---</td>
                 </tr>
                 <tr>
-                    <td class="bold">HK80</td>
+                    <td class="padLR bold right">HK80</td>
                     <td id="hk80coords">x:---, y:---</td>
                 </tr>
                 <tr>
-                    <td class="bold">Terrain Elevation</td>
+                    <td class="padLR bold right">Terrain Elevation</td>
                     <td id="elevation">--- m</td>
+                </tr>
+                <tr>
+                    <td class="dim center" colspan="2" id="clipboardDisplay">Right click to copy</td>
                 </tr>
             </table>
         </div>
@@ -84,23 +100,34 @@
             var basemapURL = "https://landsd.azure-api.net/dev/ags/map/imagery/HK80";
             // var mapEngLBUrl ="https://landsd.azure-api.net/dev/ags/map/label-en/HK80";
 
-            var groundURL  = "https://landsd.azure-api.net/dev/ags/image/hkterrain/HK80";
+            var groundURL = "https://landsd.azure-api.net/dev/ags/image/hkterrain/HK80";
+            // groundURL = "https://tiles.arcgis.com/tiles/6j1KwZfY2fZrfNMR/arcgis/rest/services/HK_DTM_5m_WTL1/MapServer"
             var infra3Durl = "https://landsd.azure-api.net/dev/ags/i3s/3dsd/infrastructure/HK80"
             var building3Durl = "https://landsd.azure-api.net/dev/ags/i3s/3dsd/building/HK80"
 
-            var kowloonEastHQmesh = "https://landsd.azure-api.net/dev/ags/i3s/meshmodel/kowlooneast/HK80"
-                        
+            // var kowloonEastHQmesh = "https://landsd.azure-api.net/dev/ags/i3s/meshmodel/kowlooneast/HK80"
+
+            const copyToClipboard = str => {
+                const el = document.createElement('textarea');
+                el.value = str;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+            };
+
             require([
                 "esri/Map", "esri/views/SceneView",
                 "esri/layers/SceneLayer", "esri/Basemap",
                 "esri/Ground", "esri/layers/TileLayer",
                 "esri/layers/ElevationLayer", "esri/layers/SceneLayer",
+                "esri/layers/IntegratedMeshLayer",
                 "esri/core/urlUtils", "esri/views/MapView",
                 "esri/config", "esri/layers/FeatureLayer",
                 "esri/geometry/SpatialReference", "esri/geometry/Point", 
                 "esri/widgets/Compass", "esri/widgets/DirectLineMeasurement3D", "esri/widgets/AreaMeasurement3D",
                 "esri/geometry/projection", "esri/core/promiseUtils", "dojo/domReady!"
-            ], function(Map, SceneView, SceneLayer, Basemap, Ground, TileLayer, ElevationLayer, SceneLayer, urlUtils,
+            ], function(Map, SceneView, SceneLayer, Basemap, Ground, TileLayer, ElevationLayer, SceneLayer, IntegratedMeshLayer, urlUtils,
                 MapView, esriConfig, FeatureLayer, SpatialReference, Point, Compass, DirectLineMeasurement3D, AreaMeasurement3D, projection, promiseUtils) {
                 
                 esriConfig.request.trustedServers.push("https://landsd.azure-api.net");
@@ -142,6 +169,9 @@
                 var ground = new Ground({
                     layers: [groundLayer]
                 });
+                // var meshModel = new IntegratedMeshLayer({
+                //     url: kowloonEastHQmesh+"/layers/0"
+                // });
 
                 var building = new SceneLayer({
                     url: building3Durl+"/layers/0",
@@ -161,6 +191,7 @@
                 });
                 map.add(building);
                 map.add(infra);
+                // map.add(meshModel);
                 
                 var scene = new SceneView({   
                     container: "scene-area",
@@ -247,6 +278,8 @@
                         }
                     });
                     //
+                    let cb = document.getElementById("clipboardDisplay")
+                    cb.innerHTML = "Loading...";
                     let queryGroundHeight = groundLayer.queryElevation(event.mapPoint)
                     promiseUtils.eachAlways([queryGroundHeight]).then(function(results) {
                         const hk80 = new Point({
@@ -260,6 +293,15 @@
                         document.getElementById("hk80coords").innerHTML = `N${parseFloat(hk80.y).toFixed(2)}, E${parseFloat(hk80.x).toFixed(2)}`;
                         document.getElementById("wgs84coords").innerHTML = `${parseFloat(wgs84.y).toFixed(7)}, ${parseFloat(wgs84.x).toFixed(7)}`;
                         document.getElementById("elevation").innerHTML = `${parseFloat(results[0].value.geometry.z).toFixed(2)} m`
+                        if (event.button === 2) {
+                            copyToClipboard(`/tpll ${wgs84.y} ${wgs84.x}`);
+                            cb.innerHTML = "Copied to clipboard"
+                            cb.className = "bold center"
+                            setTimeout(function() {
+                                cb.innerHTML = "Right click to copy"
+                                cb.className = "dim center"
+                            }, 1000)
+                        }
                     })
                 });
 
