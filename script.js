@@ -17,6 +17,8 @@ const copyToClipboard = str => {
     document.execCommand('copy');
     document.body.removeChild(el);
 };
+var cb = document.getElementById("clipboardBtn");
+cb.disabled = true;
 
 require([
     "esri/Map",
@@ -124,9 +126,8 @@ require([
         }
     });    
 
-    var cb = document.getElementById("clipboardBtn");
     var copyTPLL = () => {
-        if (cb.disabled) {
+        if (cb.disabled === false) {
             cb.disabled = true;
             copyToClipboard(document.getElementById("wgs84coords").getAttribute("data-command"));
             cb.innerHTML = "Copied to clipboard";
