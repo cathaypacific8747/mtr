@@ -69,7 +69,7 @@ html, body, #scene-area {
     padding: 2px;
 }
 .btn-disabled {
-    background-color: #000000bb;
+    background-color: transparent;
     color: grey;
 }
 .btn-enabled {

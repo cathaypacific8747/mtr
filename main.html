@@ -20,19 +20,23 @@
             <table class="esrifont">
                 <tr>
                     <td class="padLR bold right">WGS84</td>
-                    <td id="wgs84coords" data-command="">---, ---</td>
+                    <td id="wgs84coords" data-command="">--, --</td>
                 </tr>
                 <tr>
                     <td class="padLR bold right">HK80</td>
-                    <td id="hk80coords">x:---, y:---</td>
+                    <td id="hk80coords">N--, E--</td>
                 </tr>
                 <tr>
                     <td class="padLR bold right">Terrain Elevation</td>
-                    <td id="elevation">--- m</td>
+                    <td id="elevation">-- m</td>
+                </tr>
+                <tr>
+                    <td class="padLR bold right">Marker Height</td>
+                    <td id="height">-- m <span class="dim">(-- m above terrain)</span></td>
                 </tr>
                 <tr>
                     <td class="dim center" colspan="2" id="clipboardDisplay">
-                        <button class="btn btn-disabled" id="clipboardBtn" disabled>Middle-click map to copy</button>
+                        <button class="btn btn-disabled" id="clipboardBtn" disabled>Middle-click map to copy command</button>
                     </td>
                 </tr>
             </table>

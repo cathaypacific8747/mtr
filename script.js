@@ -19,18 +19,33 @@ const copyToClipboard = str => {
 };
 
 require([
-    "esri/Map", "esri/views/SceneView",
-    "esri/layers/SceneLayer", "esri/Basemap",
-    "esri/Ground", "esri/layers/TileLayer",
-    "esri/layers/ElevationLayer", "esri/layers/SceneLayer",
+    "esri/Map",
+    "esri/views/SceneView",
+    "esri/layers/SceneLayer",
+    "esri/Basemap",
+    "esri/Ground",
+    "esri/layers/TileLayer",
+    "esri/layers/ElevationLayer",
+    "esri/layers/SceneLayer",
     "esri/layers/IntegratedMeshLayer",
-    "esri/core/urlUtils", "esri/views/MapView",
-    "esri/config", "esri/layers/FeatureLayer",
-    "esri/geometry/SpatialReference", "esri/geometry/Point", 
-    "esri/widgets/Compass", "esri/widgets/DirectLineMeasurement3D", "esri/widgets/AreaMeasurement3D",
-    "esri/geometry/projection", "esri/core/promiseUtils", "dojo/domReady!"
-], function(Map, SceneView, SceneLayer, Basemap, Ground, TileLayer, ElevationLayer, SceneLayer, IntegratedMeshLayer, urlUtils,
-    MapView, esriConfig, FeatureLayer, SpatialReference, Point, Compass, DirectLineMeasurement3D, AreaMeasurement3D, projection, promiseUtils) {
+    "esri/core/urlUtils",
+    "esri/views/MapView",
+    "esri/config",
+    "esri/layers/FeatureLayer",
+    "esri/Graphic",
+    "esri/geometry/SpatialReference",
+    "esri/geometry/Point", 
+    "esri/widgets/Compass",
+    "esri/widgets/DirectLineMeasurement3D",
+    "esri/widgets/AreaMeasurement3D",
+    "esri/geometry/projection",
+    "esri/core/promiseUtils",
+    "dojo/domReady!"
+], function(Map, SceneView, SceneLayer, Basemap, Ground, 
+    TileLayer, ElevationLayer, SceneLayer, IntegratedMeshLayer, 
+    urlUtils, MapView, esriConfig, FeatureLayer, Graphic,
+    SpatialReference, Point, Compass, 
+    DirectLineMeasurement3D, AreaMeasurement3D, projection, promiseUtils) {
     
     esriConfig.request.trustedServers.push("https://landsd.azure-api.net");
     esriConfig.request.interceptors.push({
@@ -52,11 +67,10 @@ require([
         }
     });
     urlUtils.removeQueryParameters = function(a,c) {return a;}
-    
+    projection.load()
     const wgs84sr = new SpatialReference({
         wkid: 4326
     });
-    projection.load()
 
     var basemap = new Basemap({
         baseLayers: [
@@ -127,6 +141,26 @@ require([
     
     var highlight;
     scene.on("click",function(event){
+        // add red dot
+        let pt = new Graphic({
+            geometry: {
+                type: 'point',
+                x: event.mapPoint.x,
+                y: event.mapPoint.y,
+                z: event.mapPoint.z,
+                spatialReference: {
+                    wkid: 2326
+                }
+            },
+            symbol: {
+                type: "simple-marker",
+                color: "red",
+                size: "8px",
+            },
+        });
+        scene.graphics.removeAll();
+        scene.graphics.add(pt);
+
         let lastHit = null;
         scene.hitTest(event, {exclude:[scene.graphics]}).then(function(hitTestResult){
             if(hitTestResult.results.length > 0){
@@ -212,11 +246,12 @@ require([
             document.getElementById("wgs84coords").innerHTML = `${parseFloat(wgs84.y).toFixed(7)}, ${parseFloat(wgs84.x).toFixed(7)}`;
             document.getElementById("wgs84coords").setAttribute("data-command", `/tpll ${wgs84.y} ${wgs84.x}`)
             document.getElementById("elevation").innerHTML = `${parseFloat(results[0].value.geometry.z).toFixed(2)} m`
+            document.getElementById("height").innerHTML = `${parseFloat(event.mapPoint.z).toFixed(2)} m <span class="dim">(${parseFloat(event.mapPoint.z - results[0].value.geometry.z).toFixed(2)} m above terrain)</span>`
             cb.disabled = false;
             if (event.button === 1) {
                 copyTPLL();
             } else {
-                cb.innerHTML = "Copy";
+                cb.innerHTML = "Copy command";
                 cb.className = "btn btn-enabled";
             }
         })
