@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KMB</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+    <meta name="viewport" content="width=device-width">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/css/halfmoon-variables.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/js/halfmoon.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/json5@^2.0.0/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-base64@3.5.2/base64.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.tilelayer.colorfilter@1.2.5/src/leaflet-tilelayer-colorfilter.min.js"></script>
+    <script src="js/SmoothWheelZoom.js"></script>
+
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.6.2/proj4.min.js"></script>
+</head>
+<body class="dark-mode with-custom-webkit-scrollbars with-custom-css-scrollbars">
+    <div class="page-wrapper with-navbar with-sidebar with-transitions" data-sidebar-type="overlayed-sm-and-down">
+        <div class="sticky-alerts"></div>
+        <nav class="navbar">
+            <div class="navbar-content">
+                <button id="toggle-sidebar-btn" class="btn btn-action" type="button" onclick="halfmoon.toggleSidebar()">
+                    <i class="fa fa-cog" aria-hidden="true"></i>
+                </button>
+            </div>
+            <a class="navbar-brand ml-10 ml-sm-15">
+                KMB/LWB Route Lookup
+                <span class="badge font-size-12 text-monospace px-5 px-sm-10">
+                    v1.0
+                </span>
+            </a>
+            <ul class="navbar-nav hidden-sm-and-down">
+                <li class="nav-item active">
+                    <a class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link">Code</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link">License <span class="ml-5 text-monospace font-size-12">(AGPLv3)</span></a>
+                </li>
+            </ul>
+            <div class="navbar-content ml-auto">
+                <button class="btn btn-action mr-5" type="button" onclick="halfmoon.toggleDarkMode();toggleMapInvert()" aria-label="Toggle dark mode">
+                    <i class="fa fa-moon-o" aria-hidden="true"></i>
+                </button>
+            </div>
+        </nav>
+        <div class="sidebar-overlay" onclick="halfmoon.toggleSidebar()"></div>
+        <div class="sidebar">
+            <div class="sidebar-content m-10">
+                <div class="input-group my-5" id="routeGroup">
+                    <input type="text" id="routeNumberInput" class="form-control form-control-lg" placeholder="Route">
+                    <div class="input-group-append">
+                        <button id="routeNumberSearch" class="btn btn-primary btn-lg" type="button">Search</button>
+                    </div>
+                </div>
+
+                <div class="input-group my-5" id="directionGroup">
+                    <select class="form-control form-control-lg disabled" id="directionInput">
+                        <option id="directionText" class="disabled" value="error" selected="selected">Select direction:</option>
+                    </select>
+                    <div class="input-group-append">
+                        <button class="btn btn-lg disabled" type="button" id="directionSearch">Search</button>
+                    </div>
+                </div>
+
+                <div class="input-group my-5" id="stopGroup">
+                    <select class="form-control form-control-lg disabled" id="stopInput">
+                        <option id="stopText" class="disabled" value="error" selected="selected">Select stop:</option>
+                    </select>
+                    <div class="input-group-append">
+                        <button class="btn btn-lg disabled" type="button" id="stopSearch">Get</button>
+                    </div>
+                </div>
+
+                <hr />
+                <table class="table table-hover table-inner-bordered">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>ETA</th>
+                            <th>Info</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td id='eta0'>---</td>
+                            <td id='info0' class="text-right">---</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td id='eta1'>---</td>
+                            <td id='info1' class="text-right">---</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td id='eta2'>---</td>
+                            <td id='info2' class="text-right">---</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="bottom-0">
+                    <p class="font-italic">
+                        Last Requested: <span id="lastRequested">---</span>\n
+                        Last Updated: <span id="lastUpdated">---</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="content-wrapper">
+            <div class="container-fluid h-full">
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+    <script type='text/javascript' src='js/script.js'></script>
+</body>
+</html>
