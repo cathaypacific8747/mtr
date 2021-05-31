@@ -1,5 +1,6 @@
 const baseURL = "https://data.etabus.gov.hk/";
 const defaultStops = [
+    // school
     {
         'id': '937C2A421F2E7D11',
         'description': 'Caldecott Road',
@@ -10,6 +11,45 @@ const defaultStops = [
         'description': 'Caldecott Road',
         'bound': 'Sha Tin'
     },
+    // 81 to school, Kowloon bound
+    {
+        'id': '',
+        'description': 'Mei Tao House',
+        'bound': 'Kowloon'
+    },
+    {
+        'id': '',
+        'description': 'Chik Fai Street',
+        'bound': 'Kowloon'
+    },
+    {
+        'id': '',
+        'description': 'Mei Lam Estate',
+        'bound': 'Kowloon'
+    },
+    {
+        'id': '',
+        'description': 'Chung Ling Road',
+        'bound': 'Kowloon'
+    },
+    {
+        'id': '',
+        'description': 'Sha Tin Heights Road',
+        'bound': 'Kowloon'
+    },
+    // 72 to school, Kowloon bound
+    {
+        'id': '',
+        'description': 'Royal Park Hotel',
+        'bound': 'Kowloon'
+    },
+    {
+        'id': '',
+        'description': 'Sha Tin Town Centre',
+        'bound': 'Kowloon'
+    },
+    // sha tin town centre
+    // 81 
     {
         'id': '11B2034DDF30617A',
         'description': 'Hung Hom Cross Harbour Tunnel Toll Plaza',
