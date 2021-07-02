@@ -48,7 +48,17 @@ const defaultStops = [
         'description': 'Sha Tin Town Centre',
         'bound': 'Kowloon'
     },
-    // sha tin town centre
+    // 81 to school, Sha Tin bound
+    {
+        'id': '',
+        'description': 'Prince Edward Station',
+        'bound': 'Sha Tin'
+    },
+    {
+        'id': '',
+        'description': '',
+        'bound': 'Sha Tin'
+    },
     // 81 
     {
         'id': '11B2034DDF30617A',
