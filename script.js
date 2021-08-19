@@ -1,5 +1,6 @@
-const azureKey = "f4d3e21d4fc14954a1d5930d4dde3809";
-const hkmsKey = "584b2fa686f14ba283874318b3b8d6b0";
+const r = s=>atob(s).replace(/[a-z]/ig,c=>String.fromCharCode((c=c.charCodeAt())+((c&95)>77?-13:13)));
+const azureKey = r("czRxM3IyMXE0c3AxNDk1NG4xcTU5MzBxNHFxcjM4MDk=");
+const hkmsKey = r("NTg0bzJzbjY4NnMxNG9uMjgzODc0MzE4bzNvOHE2bzA=");
 
 var satelliteURL = "https://landsd.azure-api.net/dev/ags/map/imagery/HK80";
 var streetURL = "https://api.hkmapservice.gov.hk/ags/map/basemap/HK80";
@@ -76,7 +77,7 @@ require([
                     params.requestOptions.query = {key: hkmsKey}
                 }
             }
-            if (params.url.indexOf("landsd.azure-api.net/dev/ags/map/layer/ib1000/buildings/building/0") >=0 )
+            if (params.url.indexOf("api.hkmapservice.gov.hk/ags/map/layer/ib1000/buildings/building/0") >=0 )
                 params.url = params.url.replace('building/0','building');
         },
         after: function(response) {
@@ -192,7 +193,7 @@ require([
                 if(lastHit && lastHit.graphic.attributes && lastHit.graphic.attributes.Name){
                     var geonum = lastHit.graphic.attributes.Name.substring(1, 10);
                     var building = new FeatureLayer({
-                        url: "https://landsd.azure-api.net/dev/ags/map/layer/ib1000/buildings/building",
+                        url: "https://api.hkmapservice.gov.hk/ags/map/layer/ib1000/buildings/building",
                         outFields:["*"],
                         popupTemplate: {
                             title: "{englishbuildingname}, {chinesebuildingname}",
