@@ -1,11 +1,9 @@
-from typing import ValuesView
-from pandas.tseries.offsets import Hour
-from requests.models import HTTPBasicAuth
 from rich import inspect, print
 from datetime import datetime
 import pandas as pd
 import requests
 import os
+import matplotlib.pyplot as plt
 
 definitions = {
     "weatherCode": {
@@ -72,6 +70,11 @@ class Forecast():
             os.mkdir('output')
         self.hourlyForecast.to_csv(f'output/{self.modelTime}_{self.stationCode}_hourly.csv')
         self.dailyForecast.to_csv(f'output/{self.modelTime}_{self.stationCode}_daily.csv')
+        
+        plt.plot(self.hourlyForecast['ts'], self.hourlyForecast['temp'])
+        plt.savefig(f'output/{self.modelTime}_{self.stationCode}_temp.jpg', dpi=600)
+        plt.close()
+        
         return self
 
     def parseDate(self, date: float or str) -> int:
@@ -83,6 +86,7 @@ class Forecast():
 
 class HourlyForecast(Forecast):
     def __init__(self, data:dict):
+        print(data)
         self.ts = self.parseDate(data['ForecastHour'] + '0000')
         self.rh = data['ForecastRelativeHumidity'] if 'ForecastRelativeHumidity' in data else None
         self.temp = data['ForecastTemperature'] if 'ForecastTemperature' in data else None
@@ -93,7 +97,7 @@ class HourlyForecast(Forecast):
 class DailyForecast(Forecast):
     def __init__(self, data:dict):
         self.ts = self.parseDate(data['ForecastDate'] + '000000')
-        self.chanceOfRain = int(data['ForecastChanceOfRain'].replace('%', '')) / 100
+        self.chanceOfRain = 0 if '< 10' in data['ForecastChanceOfRain'] else int(data['ForecastChanceOfRain'].replace('%', '')) / 100
         self.weather = self.getWeatherDescription(data['ForecastDailyWeather'])
 
 def batchForecast():
@@ -115,4 +119,7 @@ def batchForecast():
             os.mkdir('output')
         df.to_csv(f'output/all_{category}.csv')
 
-batchForecast()
+if __name__ == '__main__':
+    f = Forecast(stationCode='SHA')
+    f.saveForecast()
+    # batchForecast()
