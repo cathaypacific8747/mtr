@@ -1,16 +1,11 @@
-const r = s=>atob(s).replace(/[a-z]/ig,c=>String.fromCharCode((c=c.charCodeAt())+((c&95)>77?-13:13)));
-const azureKey = r("czRxM3IyMXE0c3AxNDk1NG4xcTU5MzBxNHFxcjM4MDk=");
-const hkmsKey = r("NTg0bzJzbjY4NnMxNG9uMjgzODc0MzE4bzNvOHE2bzA=");
+const r = s => atob(s).replace(/[a-z]/ig, c => String.fromCharCode((c = c.charCodeAt()) + ((c & 95) > 77 ? -13 : 13)));
 
 var satelliteURL = "https://landsd.azure-api.net/dev/ags/map/imagery/HK80";
-var streetURL = "https://api.hkmapservice.gov.hk/ags/map/basemap/HK80";
-// var mapEngLBUrl ="https://landsd.azure-api.net/dev/ags/map/label-en/HK80";
+var streetURL = "https://landsd.azure-api.net/dev/ags/map/basemap/HK80";
 
 var groundURL = "https://landsd.azure-api.net/dev/ags/image/hkterrain/HK80";
-var infra3Durl = "https://landsd.azure-api.net/dev/ags/i3s/3dsd/infrastructure/HK80";
-var building3Durl = "https://landsd.azure-api.net/dev/ags/i3s/3dsd/building/HK80";
-
-var kowloonEastHQmesh = "https://landsd.azure-api.net/dev/ags/i3s/meshmodel/kowlooneast/HK80";
+var infra3Durl = "https://api.hkmapservice.gov.hk/ags/i3s/3dsd/infrastructure/HK80";
+var building3Durl = "https://api.hkmapservice.gov.hk/ags/i3s/3dsd/building/HK80";
 
 const copyToClipboard = str => {
     const el = document.createElement('textarea');
@@ -20,6 +15,7 @@ const copyToClipboard = str => {
     document.execCommand('copy');
     document.body.removeChild(el);
 };
+
 var cb = document.getElementById("clipboardBtn");
 cb.disabled = true;
 
@@ -34,59 +30,43 @@ require([
     "esri/layers/SceneLayer",
     "esri/Basemap",
     "esri/Ground",
-    "esri/webscene/Lighting",
     "esri/layers/TileLayer",
     "esri/layers/ElevationLayer",
     "esri/layers/SceneLayer",
-    "esri/layers/IntegratedMeshLayer",
     "esri/core/urlUtils",
-    "esri/views/MapView",
     "esri/config",
     "esri/layers/FeatureLayer",
     "esri/Graphic",
     "esri/geometry/SpatialReference",
     "esri/geometry/Point",
     "esri/widgets/BasemapToggle",
-    "esri/widgets/Compass",
     "esri/widgets/DirectLineMeasurement3D",
     "esri/widgets/AreaMeasurement3D",
     "esri/geometry/projection",
     "esri/core/promiseUtils",
     "dojo/domReady!"
-], function(Map, SceneView, SceneLayer, Basemap, Ground, Lighting,
-    TileLayer, ElevationLayer, SceneLayer, IntegratedMeshLayer, 
-    urlUtils, MapView, esriConfig, FeatureLayer, Graphic,
-    SpatialReference, Point, 
-    BasemapToggle, Compass, DirectLineMeasurement3D, AreaMeasurement3D,
+], function (Map, SceneView, SceneLayer, Basemap, Ground,
+    TileLayer, ElevationLayer, SceneLayer,
+    urlUtils, esriConfig, FeatureLayer, Graphic,
+    SpatialReference, Point,
+    BasemapToggle, DirectLineMeasurement3D, AreaMeasurement3D,
     projection, promiseUtils) {
-    
+
     esriConfig.request.trustedServers.push("https://landsd.azure-api.net");
     esriConfig.request.interceptors.push({
-        before: function(params) {
-            if (params.url.indexOf("landsd.azure-api.net")>=0) {
-                if (params.requestOptions.query) {
-                    params.requestOptions.query.key = azureKey
-                } else {
-                    params.requestOptions.query = {key: azureKey}
-                }
-            }
-            if (params.url.indexOf("api.hkmapservice.gov.hk")>=0) {
-                if (params.requestOptions.query) {
-                    params.requestOptions.query.key = hkmsKey
-                } else {
-                    params.requestOptions.query = {key: hkmsKey}
-                }
-            }
-            if (params.url.indexOf("api.hkmapservice.gov.hk/ags/map/layer/ib1000/buildings/building/0") >=0 )
-                params.url = params.url.replace('building/0','building');
+        before: function (params) {
+            const url = params.url;
+            const key = url.includes("landsd.azure-api.net") ? r("czRxM3IyMXE0c3AxNDk1NG4xcTU5MzBxNHFxcjM4MDk=") : url.includes("api.hkmapservice.gov.hk") ? r("NTg0bzJzbjY4NnMxNG9uMjgzODc0MzE4bzNvOHE2bzA=") : null;
+            if (key) params.requestOptions.query = { ...params.requestOptions.query, key: key };
+            url.includes("api.hkmapservice.gov.hk/ags/map/layer/ib1000/buildings/building/0") && params.url.replace('building/0', 'building');
         },
-        after: function(response) {
+        after: function (response) {
             if (!response.ssl) {
                 response.ssl = true;
             }
         }
     });
-    urlUtils.removeQueryParameters = function(a,c) {return a;}
+    urlUtils.removeQueryParameters = function (a, c) { return a; }
     projection.load()
     const wgs84sr = new SpatialReference({
         wkid: 4326
@@ -114,9 +94,6 @@ require([
     var ground = new Ground({
         layers: [groundLayer]
     });
-    // var meshModel = new IntegratedMeshLayer({
-    //     url: kowloonEastHQmesh+"/layers/0"
-    // });
 
     var buildings = new SceneLayer({
         url: `${building3Durl}/layers/0`,
@@ -128,17 +105,16 @@ require([
         popupEnabled: false,
         outFields: ["*"]
     });
-    
-    
+
+
     var map = new Map({
         basemap: satelliteMap,
         ground: ground
     });
     map.add(buildings);
     map.add(infrastructures);
-    // map.add(meshModel);
-    
-    var scene = new SceneView({   
+
+    var scene = new SceneView({
         container: "scene-area",
         map: map,
         camera: {
@@ -158,7 +134,7 @@ require([
     });
 
     var highlight;
-    scene.on("click",function(event){
+    scene.on("click", function (event) {
         // add red dot
         let pt = new Graphic({
             geometry: {
@@ -180,21 +156,21 @@ require([
         scene.graphics.add(pt);
 
         let lastHit = null;
-        scene.hitTest(event, {exclude:[scene.graphics]}).then(function(hitTestResult){
-            if(hitTestResult.results.length > 0){
+        scene.hitTest(event, { exclude: [scene.graphics] }).then(function (hitTestResult) {
+            if (hitTestResult.results.length > 0) {
                 lastHit = hitTestResult.results[0];
                 // highlight selected building
-                scene.whenLayerView(lastHit.graphic.layer).then(function(layerView){
-                    if(highlight)
+                scene.whenLayerView(lastHit.graphic.layer).then(function (layerView) {
+                    if (highlight)
                         highlight.remove();
                     highlight = layerView.highlight(lastHit.graphic);
                 });
                 // query selected building
-                if(lastHit && lastHit.graphic.attributes && lastHit.graphic.attributes.Name){
+                if (lastHit && lastHit.graphic.attributes && lastHit.graphic.attributes.Name) {
                     var geonum = lastHit.graphic.attributes.Name.substring(1, 10);
                     var building = new FeatureLayer({
                         url: "https://api.hkmapservice.gov.hk/ags/map/layer/ib1000/buildings/building",
-                        outFields:["*"],
+                        outFields: ["*"],
                         popupTemplate: {
                             title: "{englishbuildingname}, {chinesebuildingname}",
                             content: "Base Level: {baselevel}m ({baseleveldatasource})<br />\
@@ -204,8 +180,9 @@ require([
                     });
                     var query = building.createQuery();
                     query.where = `buildingcsuid like '%${geonum}%'`
-                    building.queryFeatures(query).then(function(response){
-                        if(response.features.length > 0) {
+                    building.queryFeatures(query).then(function (response) {
+                        if (response.features.length > 0) {
+                            console.log(building);
                             for (const field of building.fields) {
                                 switch (field['name']) {
                                     case 'baseleveldatasource':
@@ -232,15 +209,11 @@ require([
                                 }
                             }
                             for (const feature of response.features) {
-                                if (feature['attributes']['englishbuildingname'] === null) {
-                                    feature['attributes']['englishbuildingname'] = '<i>Unknown</i>'
-                                }
-                                if (feature['attributes']['chinesebuildingname'] === null) {
-                                    feature['attributes']['chinesebuildingname'] = '<i>不明</i>'
-                                }
+                                feature.attributes.englishbuildingname ??= '<i>Unknown</i>';
+                                feature.attributes.chinesebuildingname ??= '<i>不明</i>';
                             }
                             scene.popup.open({
-                                features : response.features
+                                features: response.features
                             })
                         }
                     });
@@ -251,7 +224,7 @@ require([
         cb.innerHTML = "Loading...";
         cb.className = "btn btn-disabled";
         let queryGroundHeight = groundLayer.queryElevation(event.mapPoint)
-        promiseUtils.eachAlways([queryGroundHeight]).then(function(results) {
+        promiseUtils.eachAlways([queryGroundHeight]).then(function (results) {
             const hk80 = new Point({
                 x: event.mapPoint.x,
                 y: event.mapPoint.y,
@@ -275,7 +248,7 @@ require([
         })
     });
 
-    scene.when(function() {
+    scene.when(function () {
         var mapt = new BasemapToggle({
             view: scene,
             nextBasemap: streetMap,
@@ -295,7 +268,7 @@ require([
                 copyToClipboard(document.getElementById("wgs84coords").getAttribute("data-command"));
                 cb.innerHTML = "Copied to clipboard";
                 cb.className = "btn btn-active bold";
-                setTimeout(function() {
+                setTimeout(function () {
                     cb.innerHTML = "Copy command";
                     cb.className = "btn btn-enabled";
                     cb.disabled = false;
@@ -303,111 +276,94 @@ require([
             }
         }
         cb.addEventListener("click", copyTPLL);
-        
-        bldb.addEventListener("click", function(e) {
-            if (bldb.getAttribute("data-status") === "off") {
-                buildings.visible = true;
-                bldb.className = "btn btn-pad btn-enabled";
-                bldb.innerHTML = "On";
-                bldb.setAttribute("data-status", "on");
-            } else {
-                buildings.visible = false;
-                bldb.className = "btn btn-pad btn-disabled";
-                bldb.innerHTML = "Off";
-                bldb.setAttribute("data-status", "off");
-            }
+
+        const setBtnSwitch = (btn, enabled) => {
+            btn.className = `btn btn-pad btn-${enabled ? "enabled" : "disabled"}`;
+            btn.innerHTML = enabled ? "On" : "Off";
+            btn.setAttribute("data-status", enabled ? "on" : "off");
+        }
+
+        [
+            [buildings, bldb],
+            [infrastructures, infb]
+        ].forEach(([layer, button]) => button.addEventListener("click", () => {
+            layer.visible = !layer.visible;
+            setBtnSwitch(button, layer.visible);
+        }));
+        terb.addEventListener("click", function (e) {
+            const isOn = terb.getAttribute("data-status") === "on";
+            map.ground.layers.forEach(layer => layer.visible = !isOn);
+            setBtnSwitch(terb, !isOn);
         });
-        infb.addEventListener("click", function(e) {
-            if (infb.getAttribute("data-status") === "off") {
-                infrastructures.visible = true;
-                infb.className = "btn btn-pad btn-enabled";
-                infb.innerHTML = "On";
-                infb.setAttribute("data-status", "on");
-            } else {
-                infrastructures.visible = false;
-                infb.className = "btn btn-pad btn-disabled";
-                infb.innerHTML = "Off";
-                infb.setAttribute("data-status", "off");
-            }
-        });
-        terb.addEventListener("click", function(e) {
-            if (terb.getAttribute("data-status") === "off") {
-                map.ground.layers.forEach(function(layer) {
-                    layer.visible = true;
-                })
-                terb.className = "btn btn-pad btn-enabled";
-                terb.innerHTML = "On";
-                terb.setAttribute("data-status", "on");
-            } else {
-                map.ground.layers.forEach(function(layer) {
-                    layer.visible = false;
-                })
-                terb.className = "btn btn-pad btn-disabled";
-                terb.innerHTML = "Off";
-                terb.setAttribute("data-status", "off");
-            }
-        });
-        mapb.addEventListener("click", function(e) {
-            if (mapb.getAttribute("data-status") === "satellite") {
-                mapt.toggle()
-                mapb.className = "btn btn-pad btn-active";
-                mapb.innerHTML = "Street";
-                mapb.setAttribute("data-status", "street");
-            } else {
-                mapt.toggle()
-                mapb.className = "btn btn-pad btn-enabled";
-                mapb.innerHTML = "Satellite";
-                mapb.setAttribute("data-status", "satellite");
-            }
+        mapb.addEventListener("click", function (e) {
+            mapt.toggle();
+            const isSatellite = mapb.getAttribute("data-status") === "satellite";
+            mapb.className = `btn btn-pad btn-${!isSatellite ? "enabled" : "active"}`;
+            mapb.innerHTML = !isSatellite ? "Satellite" : "Street";
+            mapb.setAttribute("data-status", !isSatellite ? "satellite" : "street");
         });
 
-        document.getElementById("distanceButton").addEventListener("click", function() {
-            setActiveWidget(null);
-            if (!this.classList.contains("active")) {
-                setActiveWidget("distance");
-            } else {
-                setActiveButton(null);
-            }
-        });
+        [
+            ["distanceButton", "distance"],
+            ["areaButton", "area"],
+        ].forEach(([buttonId, widgetType]) => {
+            document.getElementById(buttonId).addEventListener("click", function () {
+                setActiveWidget(null);
+                if (!this.classList.contains("active")) {
+                    setActiveWidget(widgetType);
+                } else {
+                    setActiveButton(null);
+                }
+            })
+        })
 
-        document.getElementById("areaButton").addEventListener("click", function() {
-            setActiveWidget(null);
-            if (!this.classList.contains("active")) {
-                setActiveWidget("area");
-            } else {
-                setActiveButton(null);
-            }
-        });
+        // document.getElementById("distanceButton").addEventListener("click", function () {
+        //     setActiveWidget(null);
+        //     if (!this.classList.contains("active")) {
+        //         setActiveWidget("distance");
+        //     } else {
+        //         setActiveButton(null);
+        //     }
+        // });
+
+        // document.getElementById("areaButton").addEventListener("click", function () {
+        //     setActiveWidget(null);
+        //     if (!this.classList.contains("active")) {
+        //         setActiveWidget("area");
+        //     } else {
+        //         setActiveButton(null);
+        //     }
+        // });
 
         function setActiveWidget(type) {
             switch (type) {
                 case "distance":
-                activeWidget = new DirectLineMeasurement3D({
-                    view: scene
-                });
+                    activeWidget = new DirectLineMeasurement3D({
+                        view: scene
+                    });
 
-                activeWidget.viewModel.newMeasurement();
+                    activeWidget.viewModel.newMeasurement();
 
-                scene.ui.add(activeWidget, "top-right");
-                setActiveButton(document.getElementById("distanceButton"));
-                break;
+                    scene.ui.add(activeWidget, "top-right");
+                    setActiveButton(document.getElementById("distanceButton"));
+                    break;
                 case "area":
-                activeWidget = new AreaMeasurement3D({
-                    view: scene
-                });
+                    activeWidget = new AreaMeasurement3D({
+                        view: scene
+                    });
 
-                activeWidget.viewModel.newMeasurement();
+                    activeWidget.viewModel.newMeasurement();
 
-                scene.ui.add(activeWidget, "top-right");
-                setActiveButton(document.getElementById("areaButton"));
-                break;
+                    scene.ui.add(activeWidget, "top-right");
+                    setActiveButton(document.getElementById("areaButton"));
+                    break;
                 case null:
-                if (activeWidget) {
-                    scene.ui.remove(activeWidget);
-                    activeWidget.destroy();
-                    activeWidget = null;
-                }
-                break;
+                    if (activeWidget) {
+                        scene.ui.remove(activeWidget);
+                        activeWidget.destroy();
+                        activeWidget = null;
+                    }
+                    break;
             }
         }
 
@@ -417,9 +373,7 @@ require([
             for (var i = 0; i < elements.length; i++) {
                 elements[i].classList.remove("active");
             }
-            if (selectedButton) {
-                selectedButton.classList.add("active");
-            }
+            selectedButton && selectedButton.classList.add("active");
         }
     })
 });
