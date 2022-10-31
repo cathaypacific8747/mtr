@@ -4,54 +4,14 @@ import pandas as pd
 import requests
 import os
 import matplotlib.pyplot as plt
+import json
+from io import StringIO
 
-definitions = {
-    "weatherCode": {
-        "50": "Sunny",
-        "51": "Sunny Periods",
-        "52": "Sunny Intervals",
-        "53": "Sunny Periods with A Few Showers",
-        "54": "Sunny Intervals with Showers",
-        "60": "Cloudy",
-        "61": "Overcast",
-        "62": "Light Rain",
-        "63": "Rain",
-        "64": "Heavy Rain",
-        "65": "Thunderstorms",
-        "76": "Mainly Cloudly",
-        "77": "Mainly Fine",
-        "701": "Mainly Cloudly",
-        "702": "Mainly Fine",
-        "711": "Mainly Cloudly",
-        "712": "Mainly Fine",
-        "721": "Mainly Cloudly ",
-        "722": "Mainly Fine",
-        "741": "Mainly Cloudly",
-        "742": "Mainly Fine",
-        "751": "Mainly Cloudly",
-        "752": "Mainly Fine"
-    },
-    "stationCode": {
-        "CCH": "Cheung Chau",
-        "HKA": "Chek Lap Kok",
-        "HKO": "Hong Kong Observatory",
-        "HKS": "Wong Chuk Hang",
-        "JKB": "Tseung Kwan O",
-        "LFS": "Lau Fau Shan",
-        "PEN": "Peng Chau",
-        "SEK": "Shek Kong",
-        "SHA": "Sha Tin",
-        "SKG": "Sai Kung",
-        "TKL": "Ta Kwu Ling",
-        "TPO": "Tai Po",
-        "TUN": "Tuen Mun",
-        "TY1": "Tsing Yi",
-        "WGL": "Waglan Island",
-        "SSH": "Sheung Shui",
-        "TMS": "Tai Mo Shan",
-        "TC": "Tate's Cairn",
-    }
-}
+with open('stations.json', 'r') as f:
+    stations = json.load(f)
+
+with open('weathercodes.json', 'r') as f:
+    weathercodes = json.load(f)
 
 class Forecast():
     def __init__(self, stationCode):
@@ -71,10 +31,6 @@ class Forecast():
         self.hourlyForecast.to_csv(f'output/{self.modelTime}_{self.stationCode}_hourly.csv')
         self.dailyForecast.to_csv(f'output/{self.modelTime}_{self.stationCode}_daily.csv')
         
-        plt.plot(self.hourlyForecast['ts'], self.hourlyForecast['temp'])
-        plt.savefig(f'output/{self.modelTime}_{self.stationCode}_temp.jpg', dpi=600)
-        plt.close()
-        
         return self
 
     def parseDate(self, date: float or str) -> int:
@@ -82,11 +38,10 @@ class Forecast():
         return int(datetime.timestamp(datetime(year=int(h[:4]), month=int(h[4:6]), day=int(h[6:8]), hour=int(h[8:10]), minute=int(h[10:12]), second=int(h[12:]))))
 
     def getWeatherDescription(self, weatherCode: float or str) -> str:
-        return definitions['weatherCode'][str(weatherCode)] if str(weatherCode) in definitions['weatherCode'] else 'Unknown'
+        return weathercodes[str(weatherCode)] if str(weatherCode) in weathercodes else 'Unknown'
 
 class HourlyForecast(Forecast):
     def __init__(self, data:dict):
-        print(data)
         self.ts = self.parseDate(data['ForecastHour'] + '0000')
         self.rh = data['ForecastRelativeHumidity'] if 'ForecastRelativeHumidity' in data else None
         self.temp = data['ForecastTemperature'] if 'ForecastTemperature' in data else None
@@ -100,15 +55,21 @@ class DailyForecast(Forecast):
         self.chanceOfRain = 0 if '< 10' in data['ForecastChanceOfRain'] else int(data['ForecastChanceOfRain'].replace('%', '')) / 100
         self.weather = self.getWeatherDescription(data['ForecastDailyWeather'])
 
-def batchForecast():
+def batchForecast(typhoon: bool):
     categorised_dfs = {}
-    for station in definitions["stationCode"]:
-        f = Forecast(stationCode=station)
+    model_time = 0
+    for s in stations:
+        if typhoon and not s['typhoon']:
+            continue
+
+        f = Forecast(stationCode=s['id'])
+        f.saveForecast()
+        model_time = f.modelTime
         for h in f.hourlyForecast.columns.values:
             if h != 'ts':
                 if h not in categorised_dfs:
                     categorised_dfs[h] = []
-                categorised_dfs[h].append(f.hourlyForecast[["ts", h]].rename(columns={h: station}))
+                categorised_dfs[h].append(f.hourlyForecast[["ts", h]].rename(columns={h: s['id']}))
         
     for category in categorised_dfs:
         df = categorised_dfs[category][0]
@@ -117,9 +78,32 @@ def batchForecast():
         
         if not os.path.exists('output'):
             os.mkdir('output')
-        df.to_csv(f'output/all_{category}.csv')
+        df.to_csv(f'output/{model_time}_ALL_{category}.csv')
+
+class AnemometerHistory():
+    def __init__(self, stationCode) -> None:
+        data = requests.get(f"https://www.hko.gov.hk/wxinfo/awsgis/{stationCode}_wd.csv").text
+        
+        self.stationCode = stationCode
+        self.data = pd.read_csv(StringIO(data), header=1, names=['ts', 'windSpeed', 'windDir'])
+        self.data['ts'] = self.data['ts'].apply(lambda x: int(datetime.timestamp(datetime.strptime(x, '%Y/%m/%d %H:%M'))))
+
+    def saveHistory(self):
+        if not os.path.exists('output_anemometer'):
+            os.mkdir('output_anemometer')
+        self.data.to_csv(f'output_anemometer/{self.stationCode}_wind.csv', index=False)
+
+def batchAnemometer(typhoon: bool):
+    for s in stations:
+        if typhoon and not s['typhoon']:
+            continue
+
+        h = AnemometerHistory(stationCode=s.get('an_id', s['id']).lower())
+        h.saveHistory()
+
 
 if __name__ == '__main__':
-    f = Forecast(stationCode='SHA')
-    f.saveForecast()
-    # batchForecast()
+    # f = Forecast(stationCode='WGL')
+    # f.saveForecast()
+    batchForecast(typhoon=True)
+    batchAnemometer(typhoon=True)
