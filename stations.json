@@ -12,7 +12,7 @@
     {"id": "TKL", "typhoon": true, "name": "Ta Kwu Ling"},
     {"id": "TPO", "typhoon": false, "name": "Tai Po"},
     {"id": "TUN", "typhoon": false, "name": "Tuen Mun"},
-    {"id": "TY1", "typhoon": true, "name": "Tsing Yi"},
+    {"id": "TY1", "typhoon": true, "name": "Tsing Yi", "an_id": "shl"},
     {"id": "WGL", "typhoon": false, "name": "Waglan Island"},
     {"id": "SSH", "typhoon": false, "name": "Sheung Shui"},
     {"id": "G153", "typhoon": true, "name": "Kai Tak (GRID)", "an_id": "se"},

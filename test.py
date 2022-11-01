@@ -28,8 +28,8 @@ class Forecast():
     def saveForecast(self):
         if not os.path.exists('output'):
             os.mkdir('output')
-        self.hourlyForecast.to_csv(f'output/{self.modelTime}_{self.stationCode}_hourly.csv')
-        self.dailyForecast.to_csv(f'output/{self.modelTime}_{self.stationCode}_daily.csv')
+        self.hourlyForecast.to_csv(f'output/{self.modelTime}_{self.stationCode}_hourly.csv', index=False)
+        self.dailyForecast.to_csv(f'output/{self.modelTime}_{self.stationCode}_daily.csv', index=False)
         
         return self
 
@@ -53,7 +53,7 @@ class DailyForecast(Forecast):
     def __init__(self, data:dict):
         self.ts = self.parseDate(data['ForecastDate'] + '000000')
         self.chanceOfRain = 0 if '< 10' in data['ForecastChanceOfRain'] else int(data['ForecastChanceOfRain'].replace('%', '')) / 100
-        self.weather = self.getWeatherDescription(data['ForecastDailyWeather'])
+        self.weather = self.getWeatherDescription(data.get('ForecastDailyWeather', None))
 
 def batchForecast(typhoon: bool):
     categorised_dfs = {}
@@ -78,7 +78,7 @@ def batchForecast(typhoon: bool):
         
         if not os.path.exists('output'):
             os.mkdir('output')
-        df.to_csv(f'output/{model_time}_ALL_{category}.csv')
+        df.to_csv(f'output/{model_time}_ALL_{category}.csv', index=False)
 
 class AnemometerHistory():
     def __init__(self, stationCode) -> None:
@@ -87,13 +87,15 @@ class AnemometerHistory():
         self.stationCode = stationCode
         self.data = pd.read_csv(StringIO(data), header=1, names=['ts', 'windSpeed', 'windDir'])
         self.data['ts'] = self.data['ts'].apply(lambda x: int(datetime.timestamp(datetime.strptime(x, '%Y/%m/%d %H:%M'))))
+        self.time = self.data['ts'].max()
 
     def saveHistory(self):
         if not os.path.exists('output_anemometer'):
             os.mkdir('output_anemometer')
-        self.data.to_csv(f'output_anemometer/{self.stationCode}_wind.csv', index=False)
+        self.data.to_csv(f'output_anemometer/{self.time}_{self.stationCode}_wind.csv', index=False)
 
 def batchAnemometer(typhoon: bool):
+    tses = {}
     for s in stations:
         if typhoon and not s['typhoon']:
             continue
@@ -101,9 +103,21 @@ def batchAnemometer(typhoon: bool):
         h = AnemometerHistory(stationCode=s.get('an_id', s['id']).lower())
         h.saveHistory()
 
+        for _, row in h.data.iterrows():
+            tses.setdefault(row['ts'], {}).update({
+                f'{h.stationCode}_windspeed': row['windSpeed'],
+                f'{h.stationCode}_windDir': row['windDir']
+            })
+    
+    df = pd.DataFrame(tses).T
+    df.index.name = 'ts'
+    df = df.reindex(sorted(df.columns, key=lambda x: (x.split('_')[1], x.split('_')[0])), axis=1)
+    df.to_csv(f'output_anemometer/{int(df.index.max())}_ALL_wind.csv')
 
 if __name__ == '__main__':
     # f = Forecast(stationCode='WGL')
     # f.saveForecast()
     batchForecast(typhoon=True)
+    # a = AnemometerHistory(stationCode='WGL')
+    # a.saveHistory()
     batchAnemometer(typhoon=True)
