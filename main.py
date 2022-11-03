@@ -39,7 +39,7 @@ def batchForecast(typhoonOnly: bool):
 
         print('FORECAST |', s['name'])
         f = Forecast(stationCode=s['id'])
-        f.saveForecast()
+        # f.saveForecast()
         if f.lastModified > last_mod:
             last_mod = f.lastModified
         for h in f.hourlyForecast.columns.values:
@@ -65,7 +65,7 @@ def batchAnemometer(typhoonOnly: bool):
 
         print('ANEMOMETER |', s['name'])
         h = AnemometerHistory(stationid=s['id'].lower())
-        h.saveHistory()
+        # h.saveHistory()
 
         for _, row in h.data.iterrows():
             tses.setdefault(row['ts'], {}).update({
@@ -78,7 +78,8 @@ def batchAnemometer(typhoonOnly: bool):
     df = df.reindex(sorted(df.columns, key=lambda x: (x.split('_')[1], x.split('_')[0])), axis=1)
     df.to_csv(f'output_anemometer/{int(df.index.max())}_ALL_wind.csv')
 
-def analyse():
+def analyse(typhoonOnly: bool, filter=None):
+    typhoon_stations = [s['id'] for s in stations if s['typhoon']]
     colours = {}
     df = None
 
@@ -91,7 +92,8 @@ def analyse():
     xmn, xmx = df.index.min()/86400, df.index.max()/86400
 
     for col in df.columns:
-        # if 'hka' not in col: continue
+        if typhoonOnly and col.split('_')[0] not in typhoon_stations: continue
+        if filter and filter not in col: continue
         x, y = df.index / 86400, df[col]
         stationid = col.split('_')[0].lower()
         p = plt.plot(x, y, label=get_station_detail(stationid, 'name'))
@@ -102,11 +104,12 @@ def analyse():
     
     forecasts = sorted(glob.glob('output/*_ALL_windSpeed.csv'), reverse=True)
     for i, f in enumerate(forecasts):
-        lw = 1 - ((i+1) / len(forecasts)) * .8
+        lw = 1 if len(forecasts) == 1 else 1 - ((i+1) / len(forecasts)) * .8
         df = pd.read_csv(f, index_col='ts')
         forecastTime = int(f.split('_')[0].split('/')[-1])
         for col in df.columns:
-            # if 'hka' not in col: continue
+            if typhoonOnly and col.split('_')[0] not in typhoon_stations: continue
+            if filter and filter not in col: continue
             x, y = df.index / 86400, df[col]
             plt.plot(x, y, label=f"{get_station_detail(col, 'name')} Forecast ({datetime.fromtimestamp(forecastTime, pytz.timezone('Asia/Hong_Kong')).strftime('%d/%m %H:%M')})", color=colours[col], linewidth=lw)
             plt.axvline(x=forecastTime/86400, color=colours[col], linewidth=lw)
@@ -131,9 +134,9 @@ def analyse():
     plt.show()
 
 if __name__ == "__main__":
-    # cleanup(delete=True)
     # backup()
-    # batchForecast(typhoonOnly=False)
-    # batchAnemometer(typhoonOnly=False)
+    # cleanup(delete=True)
+    batchForecast(typhoonOnly=False)
+    batchAnemometer(typhoonOnly=False)
 
-    analyse()
+    analyse(typhoonOnly=True)
