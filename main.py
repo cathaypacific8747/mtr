@@ -5,8 +5,8 @@ import shutil
 import time
 from datetime import datetime
 import glob
-# from scipy.signal import savgol_filter
 import pandas as pd
+import re
 
 plt.rcParams['font.family'] = 'cmr10'
 plt.rcParams['axes.formatter.use_mathtext'] = True
@@ -29,6 +29,16 @@ def backup():
     os.mkdir(td)
     for d in ['output', 'output_anemometer']:
         shutil.copytree(d, os.path.join(td, d))
+
+def ts2str(ts: int):
+    return datetime.fromtimestamp(ts, pytz.timezone('Asia/Hong_Kong')).strftime('%d/%m %H:%M')
+
+def graphAdj(right=.75):
+    plt.legend(bbox_to_anchor=(1.01, 1), loc='upper left')
+    plt.subplots_adjust(left=.1, right=right, bottom=.1, top=.9)
+    plt.gcf().set_size_inches(16, 9)
+
+###
 
 def batchForecast(typhoonOnly: bool):
     categorised_dfs = {}
@@ -78,7 +88,7 @@ def batchAnemometer(typhoonOnly: bool):
     df = df.reindex(sorted(df.columns, key=lambda x: (x.split('_')[1], x.split('_')[0])), axis=1)
     df.to_csv(f'output_anemometer/{int(df.index.max())}_ALL_wind.csv')
 
-def analyse(typhoonOnly: bool, filter=None):
+def analyseWind(typhoonOnly: bool, filter=None):
     typhoon_stations = [s['id'] for s in stations if s['typhoon']]
     colours = {}
     df = None
@@ -111,7 +121,7 @@ def analyse(typhoonOnly: bool, filter=None):
             if typhoonOnly and col.split('_')[0] not in typhoon_stations: continue
             if filter and filter not in col: continue
             x, y = df.index / 86400, df[col]
-            plt.plot(x, y, label=f"{get_station_detail(col, 'name')} Forecast ({datetime.fromtimestamp(forecastTime, pytz.timezone('Asia/Hong_Kong')).strftime('%d/%m %H:%M')})", color=colours[col], linewidth=lw)
+            plt.plot(x, y, label=f"{get_station_detail(col, 'name')} Forecast ({ts2str(forecastTime)})", color=colours[col], linewidth=lw)
             plt.axvline(x=forecastTime/86400, color=colours[col], linewidth=lw)
 
     plt.title('Wind Speed + Forecast')
@@ -126,17 +136,36 @@ def analyse(typhoonOnly: bool, filter=None):
     plt.xlim(xmn, xmx+2)
     # plt.xlim(xmn)
 
-    plt.legend(bbox_to_anchor=(1.01, 1), loc='upper left')
-    plt.subplots_adjust(left=.1, right=.75, bottom=.1, top=.9)
-    plt.gcf().set_size_inches(16, 9)
+    graphAdj()
     plt.savefig('analyse.png', dpi=600)
+    plt.show()
+
+def analyseTemp():
+    forecasts = sorted(glob.glob('output/*_ALL_temp.csv'), reverse=True)
+    for _, f in enumerate(forecasts):
+        ts = int(re.compile(r'output/(\d+)_ALL_temp.csv').search(f).group(1))
+        df = pd.read_csv(f, index_col='ts')
+        th, mean, stdev = df.index / 86400, df.mean(axis=1), df.std(axis=1)
+        for col in df.columns:
+            plt.plot(th, df[col], color='grey', lw=.1)
+        plt.plot(th, mean, label=ts2str(ts), lw=2)
+        plt.fill_between(th, mean-stdev, mean+stdev, alpha=.2)
     
+    plt.title('Average Temp Forecast')
+    plt.xlabel('Time (HKT)')
+    plt.ylabel('Temperature (°C)')
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d/%m\n%H:%M', tz=pytz.timezone('Asia/Hong_Kong')))
+    plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=12))
+    
+    graphAdj(right=.85)
+    plt.savefig('analyse_temp.png', dpi=600)
     plt.show()
 
 if __name__ == "__main__":
     # backup()
     # cleanup(delete=True)
-    batchForecast(typhoonOnly=False)
-    batchAnemometer(typhoonOnly=False)
+    # batchForecast(typhoonOnly=False)
+    # batchAnemometer(typhoonOnly=False)
 
-    analyse(typhoonOnly=True)
+    # analyseWind(typhoonOnly=True, filter='cch')
+    analyseTemp()
