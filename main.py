@@ -141,7 +141,7 @@ def analyseWind(typhoonOnly: bool, filter=None):
     plt.show()
 
 def analyseTemp():
-    forecasts = sorted(glob.glob('output/*_ALL_temp.csv'), reverse=True)
+    forecasts = sorted(glob.glob('output/*_ALL_temp.csv'))
     for _, f in enumerate(forecasts):
         ts = int(re.compile(r'output/(\d+)_ALL_temp.csv').search(f).group(1))
         df = pd.read_csv(f, index_col='ts')
@@ -158,6 +158,8 @@ def analyseTemp():
     plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=12))
     
     graphAdj(right=.85)
+    tsmin = int(re.compile(r'output/(\d+)_ALL_temp.csv').search(forecasts[0]).group(1)) / 86400
+    plt.xlim(tsmin, tsmin + 15)
     plt.savefig('analyse_temp.png', dpi=600)
     plt.show()
 
