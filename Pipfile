@@ -8,6 +8,7 @@ matplotlib = "*"
 pandas = "*"
 rich = "*"
 requests = "*"
+pyqt6 = "*"
 
 [dev-packages]
 

@@ -11,6 +11,7 @@ import re
 plt.rcParams['font.family'] = 'cmr10'
 plt.rcParams['axes.formatter.use_mathtext'] = True
 plt.style.use('dark_background')
+plt.switch_backend('QtAgg')
 
 def cleanup(delete:bool=False):
     for d in ['output', 'output_anemometer']:
@@ -164,10 +165,10 @@ def analyseTemp():
     plt.show()
 
 if __name__ == "__main__":
-    # backup()
-    # cleanup(delete=True)
-    # batchForecast(typhoonOnly=False)
-    # batchAnemometer(typhoonOnly=False)
+    backup()
+    cleanup(delete=False)
+    batchForecast(typhoonOnly=False)
+    batchAnemometer(typhoonOnly=False)
 
-    # analyseWind(typhoonOnly=True, filter='cch')
-    analyseTemp()
+    analyseWind(typhoonOnly=False)
+    # analyseTemp()
