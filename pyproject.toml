@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "hkopendata"
+version = "0.0.1"
+description = "Tools to download miscallaneous geospatial data"
+authors = [
+    "cathaypacific8747 <58929011+cathaypacific8747@users.noreply.github.com>",
+]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+matplotlib = "^3.9.1"
+pandas = "^2.2.2"
+rich = "^13.7.1"
+httpx = { extras = ["http2"], version = "^0.27.0" }
+pyqt6 = "^6.7.0"
+orjson = "^3.10.6"
+
+
+[tool.poetry.group.types.dependencies]
+pandas-stubs = "^2.2.2.240603"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

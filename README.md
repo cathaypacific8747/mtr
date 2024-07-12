@@ -1,13 +1,18 @@
-# hko
-Random project for downloading objective consensus forecast (OCF) weather predictions from the Hong Kong Observatory.
+# hkopendata
+
+This repo contains miscellaneous tools for analysing open geospatial data.
+
+## weather
+
+Ojective consensus forecast (OCF) weather predictions from the Hong Kong Observatory.
 
 Wind Speed analysis for TC Nalgae:
-![Analysis](img/nalgae_wind.png)
+![Analysis](src/weather/data/img/nalgae_wind.png)
 
 Temp drop on 01 Dec 2022:
-![Analysis](img/1dec_tempdrop.png)
+![Analysis](stc/weather/data/img/1dec_tempdrop.png)
 
-## Note
+### Note
 - forecast: https://www.hko.gov.hk/en/wxinfo/awsgis/regional_weather_gis.html
 - anemometer: https://maps.hko.gov.hk/ocf/index_e.html
 
