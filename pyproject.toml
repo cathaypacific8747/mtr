@@ -16,10 +16,37 @@ rich = "^13.7.1"
 httpx = { extras = ["http2"], version = "^0.27.0" }
 pyqt6 = "^6.7.0"
 orjson = "^3.10.6"
+aiofiles = "^24.1.0"
+tqdm = "^4.66.4"
 
 
 [tool.poetry.group.types.dependencies]
 pandas-stubs = "^2.2.2.240603"
+types-aiofiles = "^24.1.0.20240626"
+types-tqdm = "^4.66.0.20240417"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.5.1"
+mypy = "^1.10.1"
+
+
+[tool.poetry.group.hydro.dependencies]
+pydantic = "^2.8.2"
+pydantic-xml = "^2.11.0"
+
+[tool.ruff]
+lint.select = [
+    "N",
+    "E",
+    "W",   # pycodestyle
+    "F",   # pyflakes
+    "I",   # isort
+    "NPY", # numpy
+    "DTZ", # flake8-datetimez
+    "RUF",
+    # "PD",  # pandas
+]
 
 [build-system]
 requires = ["poetry-core"]
