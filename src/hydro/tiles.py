@@ -1,4 +1,3 @@
-import re
 from typing import AsyncGenerator
 
 import aiofiles
@@ -46,7 +45,7 @@ class OfflineTiles:
                 bytes_downloaded = response.num_bytes_downloaded
 
     @staticmethod
-    async def download(client: httpx.AsyncClient) -> None:
-        async with aiofiles.open(DATA_DIR / "test.mbtiles", "wb") as f:
+    async def download(client: httpx.AsyncClient, file_name: str) -> None:
+        async with aiofiles.open(DATA_DIR / file_name, "wb") as f:
             async for chunk in OfflineTiles.fetch(client):
                 await f.write(chunk)

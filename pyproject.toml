@@ -11,13 +11,13 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.9"
 matplotlib = "^3.9.1"
-pandas = "^2.2.2"
 rich = "^13.7.1"
 httpx = { extras = ["http2"], version = "^0.27.0" }
 pyqt6 = "^6.7.0"
 orjson = "^3.10.6"
 aiofiles = "^24.1.0"
 tqdm = "^4.66.4"
+polars = "^1.6.0"
 
 
 [tool.poetry.group.types.dependencies]
@@ -35,19 +35,37 @@ mypy = "^1.10.1"
 pydantic = "^2.8.2"
 pydantic-xml = "^2.11.0"
 
-[tool.ruff]
-lint.select = [
-    "N",
-    "E",
-    "W",   # pycodestyle
-    "F",   # pyflakes
-    "I",   # isort
-    "NPY", # numpy
-    "DTZ", # flake8-datetimez
-    "RUF",
-    # "PD",  # pandas
-]
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",      # pycodestyle
+    "F",      # pyflakes
+    "I",      # isort
+    "NPY",    # numpy
+    "NPY201", # numpy
+    # "PD",  # pandas
+    "DTZ", # flake8-datetimez
+    "RUF",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["numpy", "pandas", "pyproj", "shapely"]
+
+[tool.mypy]
+python_version = "3.12"
+platform = "posix"
+
+color_output = true
+pretty = true
+show_column_numbers = true
+strict = true
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true

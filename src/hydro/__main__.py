@@ -1,21 +1,19 @@
 import httpx
 import rich
 
-from .tiles import OfflineTiles, _OfflineTilesVersion
+from .tiles import OfflineTiles
 from .version import Version
 
 
-async def main():
+async def main() -> None:
     async with httpx.AsyncClient() as client:
-        # await Version.download(client)
-        # metadata = Version.load()
-        # rich.print(metadata)
-        # x = await _OfflineTilesVersion.fetch(client)
-        # rich.print(_OfflineTilesVersion.from_xml(x).request)
-        await OfflineTiles.download(client)
+        await Version.download(client)
+        metadata = Version.load()
+        rich.print(metadata)
+        await OfflineTiles.download(client, metadata.file_name)
 
 
 if __name__ == "__main__":
     import asyncio
 
-    response = asyncio.run(main())
+    asyncio.run(main())
