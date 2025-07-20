@@ -1,43 +1,37 @@
 [project]
 name = "hkopendata"
 version = "0.0.1"
-description = "Tools to download miscallaneous geospatial data"
-authors = [{ name = "cathaypacific8747", email = "58929011+cathaypacific8747@users.noreply.github.com" }]
+description = "Open geospatial data in Hong Kong"
+authors = [
+    { name = "cathaypacific8747", email = "58929011+cathaypacific8747@users.noreply.github.com" },
+]
 requires-python = ">=3.9"
 readme = "README.md"
 license = "MIT"
 dependencies = [
-    "matplotlib>=3.9.1,<4",
-    "rich>=13.7.1,<14",
-    "httpx[http2]>=0.27.0,<0.28",
-    "pyqt6>=6.7.0,<7",
-    "orjson>=3.10.6,<4",
-    "aiofiles>=24.1.0,<25",
-    "tqdm>=4.66.4,<5",
-    "polars>=1.6.0,<2",
+    "aiofiles>=24.1.0",
+    "httpx>=0.28.1",
+    "orjson>=3.11.0",
+    "polars>=1.31.0",
+    "rich>=14.0.0",
 ]
+
+[project.optional-dependencies]
+cli = ["appdirs>=1.4.4", "typer>=0.16.0"]
+plot = ["matplotlib>=3.9.4", "pyqt6>=6.9.1"]
+hydro = ["pydantic>=2.11.7", "pydantic-xml>=2.17.3"]
+
+[project.scripts]
+hkopendata = 'hkopendata.cli:app'
 
 [dependency-groups]
-types = [
-    "pandas-stubs>=2.2.2.240603,<3",
-    "types-aiofiles>=24.1.0.20240626,<25",
-    "types-tqdm>=4.66.0.20240417,<5",
-]
-dev = [
-    "ruff>=0.5.1,<0.6",
-    "mypy>=1.10.1,<2",
-]
-hydro = [
-    "pydantic>=2.8.2,<3",
-    "pydantic-xml>=2.11.0,<3",
-]
+types = ["types-aiofiles>=24.1.0.20250708"]
+lint = ["ruff>=0.12.4"]
+typing = ["mypy>=1.17.0"]
 
 [tool.uv]
-default-groups = [
-    "types",
-    "dev",
-    "hydro",
-]
+default-groups = ["types", "lint", "typing"]
+
 
 [build-system]
 requires = ["hatchling"]
@@ -60,7 +54,7 @@ select = [
 known-first-party = ["numpy", "pandas", "pyproj", "shapely"]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.9"
 platform = "posix"
 
 color_output = true

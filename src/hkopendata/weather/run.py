@@ -1,54 +1,66 @@
+from __future__ import annotations
+
 import time
 from dataclasses import asdict, dataclass
 from itertools import chain
+from logging import getLogger
 from pathlib import Path
 from typing import Generator, TypedDict
 
 import httpx
 import orjson
 import polars as pl
-from tqdm import tqdm
+from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
-from . import DATA_DIR
 from .ocf import fetch_ocf
 from .station import grid, stations
 
-RUN_DIR = DATA_DIR / "runs"
+logger = getLogger(__name__)
 
 
-async def start_run() -> None:
+async def ocf_download(path_base: Path) -> None:
     run_id = int(time.time())
-
-    base_dir = RUN_DIR / str(run_id)
-    hourly_dir = base_dir / "hourly"
+    path_run = path_base / str(run_id)
+    hourly_dir = path_run / "hourly"
     hourly_dir.mkdir(parents=True, exist_ok=True)
-    # daily_dir = base_dir / "daily"
+    # daily_dir = path_run / "daily"
     # daily_dir.mkdir(parents=True, exist_ok=True)
 
     async with httpx.AsyncClient() as client:
         stations_all = []
-        for station in tqdm(chain(grid(), stations())):
-            ocf = await fetch_ocf(client, station.id)
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            TimeElapsedColumn(),
+            console=None,
+        ) as progress:
+            task = progress.add_task("processing station", total=None)
 
-            pl.DataFrame(ocf["HourlyWeatherForecast"]).write_parquet(
-                hourly_dir / f"{station.id}.parquet"
-            )
-            # pl.DataFrame(ocf["DailyForecast"]).write_parquet(
-            #     daily_dir / f"{station.id}.parquet"
-            # )
+            for station in chain(grid(), stations()):
+                progress.update(task, description=f"fetching station {station.id}")
+                ocf = await fetch_ocf(client, station.id)
 
-            stations_all.append(
-                {
-                    **asdict(station),
-                    "lat": ocf["Latitude"],
-                    "lng": ocf["Longitude"],
-                    "last_modified": ocf["LastModified"],
-                    "model_time": ocf["ModelTime"],
-                }
-            )
+                pl.DataFrame(ocf["HourlyWeatherForecast"]).write_parquet(
+                    hourly_dir / f"{station.id}.parquet"
+                )
+                # pl.DataFrame(ocf["DailyForecast"]).write_parquet(
+                #     daily_dir / f"{station.id}.parquet"
+                # )
 
-        with open(base_dir / "stations.json", "wb") as f:
+                stations_all.append(
+                    {
+                        **asdict(station),
+                        "lat": ocf["Latitude"],
+                        "lng": ocf["Longitude"],
+                        "last_modified": ocf["LastModified"],
+                        "model_time": ocf["ModelTime"],
+                    }
+                )
+
+        fp_out = path_run / "stations.json"
+        with open(fp_out, "wb") as f:
             f.write(orjson.dumps(stations_all, option=orjson.OPT_INDENT_2))
+        logger.info(f"wrote {len(stations_all)} stations to {fp_out}")
 
 
 class Station(TypedDict):
@@ -72,16 +84,13 @@ class Run:
             return orjson.loads(f.read())  # type: ignore
 
 
-def runs() -> Generator[Run, None, None]:
-    for run in (DATA_DIR / "runs").iterdir():
+def ocf_runs(path_base: Path) -> Generator[Run, None, None]:
+    for run in path_base.iterdir():
         if run.is_dir():
             yield Run(fp=run)
 
 
-def plot() -> None:
-    # def spatial_grid() -> npt.NDArray[np.float64]:
-    #     return np.full((16, 15), np.nan)  # (lng, lat)
-
+def ocf_plot_hourly_wind(path_base: Path) -> None:
     import matplotlib.pyplot as plt
 
     plt.style.use("dark_background")
@@ -90,7 +99,7 @@ def plot() -> None:
     DISTANCE_MAX = 1.2
     DISTANCE_MAX_STATION = 0.4
 
-    for base_dir in runs():
+    for base_dir in ocf_runs(path_base):
         hourly_dir = base_dir.fp / "hourly"
 
         # arr = spatial_grid()

@@ -1,30 +1,46 @@
 # hkopendata
 
-This repo contains miscellaneous tools for downloading and analysing Hong Kong geospatial data.
+This repo contains miscellaneous tools for downloading and analysing open geospatial data in Hong Kong.
+
+Installation (CLI):
 
 ```sh
-uv sync
+cd hkopendata
+uv tool install "https://github.com/cathaypacific8747/hkopendata[cli]"
+hkopendata --help
 ```
 
-## hydro
+Installation (library):
 
-Raster tiles from the Hong Kong Hydrographic Office, Marine Department.
+```sh
+uv add https://github.com/cathaypacific8747/hkopendata
+```
 
-![demo](src/hkopendata/hydro/data/img/demo.webp)
+Development:
 
-## weather
+```sh
+git clone https://github.com/cathaypacific8747/hkopendata
+uv sync --all-extras --all-groups
+uv tool install ".[cli]" --editable
+```
 
-Ojective consensus forecast (OCF) weather predictions from the Hong Kong Observatory.
+## features
+
+### hydro
+
+Download raster tiles from the Hong Kong Hydrographic Office, Marine Department:
+
+![demo](docs/assets/hydro_demo.webp)
+
+### weather
+
+Objective consensus forecast (OCF) weather predictions from the Hong Kong Observatory.
 
 - forecast: https://www.hko.gov.hk/en/wxinfo/awsgis/regional_weather_gis.html
 - anemometer: https://maps.hko.gov.hk/ocf/index_e.html
 
 Wind Speed analysis for TC Nalgae:
-![Analysis](src/hkopendata/weather/data/img/nalgae_wind.png)
+![Analysis](docs/assets/nalgae_wind.png)
 
 Temp drop on 01 Dec 2022:
-![Analysis](src/hkopendata/weather/data/img/1dec_tempdrop.png)
-
-```py
-uv run python3 -m src.hkopendata.weather
-```
+![Analysis](docs/assets/1dec_tempdrop.png)

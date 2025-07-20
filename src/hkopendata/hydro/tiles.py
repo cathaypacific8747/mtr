@@ -1,11 +1,19 @@
+from pathlib import Path
 from typing import AsyncGenerator
 
 import aiofiles
 import httpx
 from pydantic_xml import BaseXmlModel, element
-from tqdm import tqdm
+from rich.progress import (
+    BarColumn,
+    DownloadColumn,
+    Progress,
+    TextColumn,
+    TimeRemainingColumn,
+    TransferSpeedColumn,
+)
 
-from . import API_ENDPOINT, DATA_DIR, DEFAULT_PARAMS
+from . import API_ENDPOINT, DEFAULT_PARAMS
 
 
 class _OfflineTilesVersion(BaseXmlModel, tag="result"):
@@ -38,14 +46,24 @@ class OfflineTiles:
         response.raise_for_status()
         content_length = int(response.headers["Content-Length"])
         bytes_downloaded = response.num_bytes_downloaded
-        with tqdm(total=content_length, unit="B", unit_scale=True) as pbar:
+
+        with Progress(
+            TextColumn("[bold blue]{task.description}"),
+            BarColumn(),
+            DownloadColumn(),
+            TransferSpeedColumn(),
+            TimeRemainingColumn(),
+        ) as progress:
+            task = progress.add_task("Downloading", total=content_length)
             async for chunk in response.aiter_bytes():
                 yield chunk
-                pbar.update(response.num_bytes_downloaded - bytes_downloaded)
+                progress.update(
+                    task, advance=response.num_bytes_downloaded - bytes_downloaded
+                )
                 bytes_downloaded = response.num_bytes_downloaded
 
     @staticmethod
-    async def download(client: httpx.AsyncClient, file_name: str) -> None:
-        async with aiofiles.open(DATA_DIR / file_name, "wb") as f:
+    async def download(client: httpx.AsyncClient, fp: Path) -> None:
+        async with aiofiles.open(fp, "wb") as f:
             async for chunk in OfflineTiles.fetch(client):
                 await f.write(chunk)
