@@ -2,6 +2,14 @@
 
 This repo contains miscellaneous tools for downloading and analysing open geospatial data in Hong Kong.
 
+It also serves as a monorepo of my old toy projects. They are largely written in good ol' jquery and plain JS. Links to github pages:
+
+- [`old/btehk-3dmap`](https://cathaypacific8747.github.io/hkopendata/old/btehk-3dmap/): A 3D map/visualisation of Hong Kong aimed to help builders of the BuildTheEarth HK Community.
+- [`old/mtr`](https://cathaypacific8747.github.io/hkopendata/old/mtr/): Check MTR times easier.
+- [`old/cky-bus`](https://cathaypacific8747.github.io/hkopendata/old/cky-bus/): Check KMB bus times at my secondary school.
+
+These still work, but are pretty cringe and will be rewritten in the future.
+
 Installation (CLI):
 
 ```sh
