@@ -9,9 +9,6 @@ import orjson
 import polars as pl
 from tqdm import tqdm
 
-import numpy as np
-import numpy.typing as npt
-
 from . import DATA_DIR
 from .ocf import fetch_ocf
 from .station import grid, stations
