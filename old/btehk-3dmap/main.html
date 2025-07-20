@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+        <script src="https://js.arcgis.com/4.18/"></script>
+        <link rel="stylesheet" href="https://js.arcgis.com/4.18/esri/themes/dark/main.css">
+        <link rel="stylesheet" href="style.css">
+
+        <link rel="icon" href="favicon.png">
+        <title>BTE-HK 3D Explorer</title>
+    </head>
+    <body>
+        <div id="scene-area"></div>
+        <div id="topbar">
+            <button class="action-button esri-icon-measure-line" id="distanceButton" type="button" title="Measure distance between two points"></button
+            ><button class="action-button esri-icon-measure-area" id="areaButton" type="button" title="Measure area"></button>
+        </div>
+        <div id="bottomRightBar" class="blackBox">
+            <table class="esrifont">
+                <tr>
+                    <td class="padLR bold right">WGS84</td>
+                    <td id="wgs84coords" data-command="">--, --</td>
+                </tr>
+                <tr>
+                    <td class="padLR bold right">HK80</td>
+                    <td id="hk80coords">N--, E--</td>
+                </tr>
+                <tr>
+                    <td class="padLR bold right">Terrain Elevation</td>
+                    <td id="elevation">-- m</td>
+                </tr>
+                <tr>
+                    <td class="padLR bold right">Marker Height</td>
+                    <td id="height">-- m <span class="dim">(-- m above terrain)</span></td>
+                </tr>
+                <tr>
+                    <td class="center" colspan="2">
+                        <button class="btn btn-disabled" id="clipboardBtn">Middle-click map to copy command</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="bottomLeftBar" class="blackBox">
+            <table class="esrifont">
+                <tr>
+                    <td class="right bold padLR">
+                        Buildings
+                    </td>
+                    <td class="center">
+                        <button class="btn btn-pad btn-enabled" id="buildingsBtn" data-status="on">On</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="right bold padLR">
+                        Infrastructure
+                    </td>
+                    <td class="center">
+                        <button class="btn btn-pad btn-enabled" id="infrastructuresBtn" data-status="on">On</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="right bold padLR">
+                        Terrain
+                    </td>
+                    <td class="center">
+                        <button class="btn btn-pad btn-enabled" id="terrainBtn" data-status="on">On</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="right bold padLR">
+                        Map
+                    </td>
+                    <td class="center">
+                        <button class="btn btn-pad btn-enabled" id="mapBtn" data-status="satellite">Satellite</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
